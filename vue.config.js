@@ -1,17 +1,16 @@
-const path = require('path');
+const path = require("path");
 module.exports = {
   // 基本路径
-  publicPath: process.env.NODE_ENV === 'production' ? '' : '/',
+  publicPath: process.env.NODE_ENV === "production" ? "" : "/",
   // 输出文件目录
-  outputDir: process.env.NODE_ENV === 'production' ? 'dist' : 'devdist',
+  outputDir: process.env.NODE_ENV === "production" ? "dist" : "devdist",
   // eslint-loader 是否在保存的时候检查
   lintOnSave: true,
   /**
    * webpack配置,see https://github.com/vuejs/vue-cli/blob/dev/docs/webpack.md
    **/
-  chainWebpack: (config) => {
-  },
-  configureWebpack: (config) => {
+  chainWebpack: config => {},
+  configureWebpack: config => {
     // config.resolve = { // 配置解析别名
     //   extensions: ['.js', '.json', '.vue'],
     //   alias: {
@@ -41,16 +40,16 @@ module.exports = {
        * 如果你在学习过程中，发现package.json中的，"node-sass"：4.x以上、"sass-loader": "^8.x"，都比视频中的版本高，请查看以下网址作相应修改；
        * http://www.web-jshtml.cn/?t/13.html
        */
-      scss: { 
+      scss: {
         prependData: `@import "./src/styles/main.scss";`
       }
-    },
+    }
     // 启用 CSS modules for all css / pre-processor files.
     // modules: false
   },
   // use thread-loader for babel & TS in production build
   // enabled by default if the machine has more than 1 cores
-  parallel: require('os').cpus().length > 1,
+  parallel: require("os").cpus().length > 1,
   /**
    *  PWA 插件相关配置,see https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-pwa
    */
@@ -58,21 +57,21 @@ module.exports = {
   // webpack-dev-server 相关配置
   devServer: {
     open: false, // 编译完成是否打开网页
-    host: '0.0.0.0', // 指定使用地址，默认localhost,0.0.0.0代表可以被外界访问
+    host: "0.0.0.0", // 指定使用地址，默认localhost,0.0.0.0代表可以被外界访问
     port: 8080, // 访问端口
     https: false, // 编译失败时刷新页面
     hot: true, // 开启热加载
     hotOnly: false,
     proxy: null, // 设置代理
-    overlay: { // 全屏模式下是否显示脚本错误
+    overlay: {
+      // 全屏模式下是否显示脚本错误
       warnings: true,
       errors: true
     },
-    before: app => {
-    }
+    before: app => {}
   },
   /**
    * 第三方插件配置
    */
   pluginOptions: {}
-}
+};
