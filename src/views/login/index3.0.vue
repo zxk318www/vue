@@ -67,9 +67,7 @@
               ></el-input>
             </el-col>
             <el-col :span="9">
-              <el-button type="success" class="block" @click="getSms()"
-                >获取验证码</el-button
-              >
+              <el-button type="success" class="block">获取验证码</el-button>
             </el-col>
           </el-row>
         </el-form-item>
@@ -87,7 +85,6 @@
   </div>
 </template>
 <script>
-import { GetSms } from "@/api/login";
 import {
   stripscript,
   testJs,
@@ -98,7 +95,6 @@ import {
 import { reactive, ref, isRef, toRefs, onMounted } from "@vue/composition-api";
 export default {
   name: "login",
-  //Vue 3.0语法
   // setup(props, context) {
   setup(props, { refs }) {
     //3.0 这里放置 data数据 、生命周期函数、自定义函数
@@ -199,7 +195,6 @@ export default {
       data.current = true;
       model.value = data.type;
     };
-    //提交
     const submitForm = formName => {
       // context.refs[formName].validate(valid => {
       refs[formName].validate(valid => {
@@ -211,13 +206,6 @@ export default {
         }
       });
     };
-    //获取验证码
-    const getSms = () => {
-      let data = {
-        username: ruleForm.username
-      };
-      GetSms(data);
-    };
 
     //新的声明周期函数 挂载完成后
     onMounted(() => {});
@@ -228,8 +216,7 @@ export default {
       ruleForm,
       rules,
       toggleMenu,
-      submitForm,
-      getSms
+      submitForm
     };
   }
 };

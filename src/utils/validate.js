@@ -43,3 +43,5 @@ export function validateCodeReg(params) {
   let reg = /^[a-z0-9]{6}$/;
   return !reg.test(params) ? false : true;
 }
+
+//import {validateCodeReg ,validatePasswordReg} from '@/utils/validate'
