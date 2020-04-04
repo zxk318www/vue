@@ -1,6 +1,12 @@
 <template>
   <div id="login">
     <div class="login-wrap">
+      <lottie
+        :options="defaultOptions"
+        :height="200"
+        :width="200"
+        v-on:animCreated="handleAnimation"
+      />
       <ul class="menu-tab">
         <li
           v-for="item in menuTab"
@@ -93,6 +99,7 @@ import {
   validateCodeReg
 } from "@/utils/validate";
 import { reactive, ref, isRef, toRefs, onMounted } from "@vue/composition-api";
+import * as animationData from "@/assets/lottie/back.json";
 export default {
   name: "login",
   // setup(props, context) {
@@ -100,13 +107,17 @@ export default {
     //3.0 这里放置 data数据 、生命周期函数、自定义函数
     //对象 用reactive声明
     const menuTab = reactive([
-      { txt: "登录", current: true, type: "login" },
+      { txt: "登录2", current: true, type: "login" },
       { txt: "注册", current: false, type: "register" }
     ]);
     // console.log(menuTab);
     //模块值 ref 声明基础数据类型，取值、赋值 XX.value = xxx
     const model = ref("login");
     // console.log(model.value);
+
+    const defaultOptions = { animationData: animationData.default };
+    const animationSpeed = 1;
+    let anim = {};
 
     //表单
     const ruleForm = reactive({
@@ -210,13 +221,22 @@ export default {
     //新的声明周期函数 挂载完成后
     onMounted(() => {});
 
+    let handleAnimation = ob => {
+      anim = ob;
+      console.log(anim);
+    };
+
     return {
       menuTab,
       model,
       ruleForm,
       rules,
       toggleMenu,
-      submitForm
+      submitForm,
+      defaultOptions,
+      animationSpeed,
+      anim,
+      handleAnimation
     };
   }
 };

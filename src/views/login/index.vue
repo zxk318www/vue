@@ -1,6 +1,12 @@
 <template>
   <div id="login">
     <div class="login-wrap">
+      <lottie
+        :options="defaultOptions"
+        :height="200"
+        :width="200"
+        v-on:animCreated="handleAnimation"
+      />
       <ul class="menu-tab">
         <li
           v-for="item in menuTab"
@@ -20,8 +26,9 @@
         size="medium"
       >
         <el-form-item prop="username" class="item-form">
-          <label>邮箱</label>
+          <label for="username">邮箱</label>
           <el-input
+            id="username"
             type="text"
             v-model="ruleForm.username"
             autocomplete="off"
@@ -29,8 +36,9 @@
         </el-form-item>
 
         <el-form-item prop="password" class="item-form">
-          <label>密码</label>
+          <label for="password">密码</label>
           <el-input
+            id="password"
             type="password"
             v-model="ruleForm.password"
             autocomplete="off"
@@ -45,8 +53,9 @@
           class="item-form"
           v-show="model === 'register'"
         >
-          <label>重复密码</label>
+          <label for="passwords">重复密码</label>
           <el-input
+            id="passwords"
             type="password"
             v-model="ruleForm.passwords"
             autocomplete="off"
@@ -57,18 +66,23 @@
         </el-form-item>
 
         <el-form-item prop="code" class="item-form">
-          <label>验证码</label>
+          <label for="code">验证码</label>
           <el-row :gutter="10">
             <el-col :span="15">
               <el-input
-                v-model.number="ruleForm.code"
+                id="code"
+                v-model="ruleForm.code"
                 maxlength="6"
                 minlength="6"
               ></el-input>
             </el-col>
             <el-col :span="9">
-              <el-button type="success" class="block" @click="getSms()"
-                >获取验证码</el-button
+              <el-button
+                type="success"
+                class="block"
+                @click="getSms()"
+                :disabled="codeButton.status"
+                >{{ codeButton.text }}</el-button
               >
             </el-col>
           </el-row>
@@ -79,7 +93,9 @@
             type="danger"
             @click="submitForm('ruleForm')"
             class="login-btn block"
-            >提交
+            :disabled="loginButtonStatus"
+          >
+            {{ model === "login" ? "登录" : "注册" }}
           </el-button>
         </el-form-item>
       </el-form>
@@ -87,7 +103,7 @@
   </div>
 </template>
 <script>
-import { GetSms } from "@/api/login";
+import { GetSms, Register, Login } from "@/api/login";
 import {
   stripscript,
   testJs,
@@ -95,12 +111,13 @@ import {
   validatePasswordReg,
   validateCodeReg
 } from "@/utils/validate";
-import { reactive, ref, isRef, toRefs, onMounted } from "@vue/composition-api";
+import { reactive, ref, onMounted } from "@vue/composition-api";
+import * as animationData from "@/assets/lottie/back.json";
 export default {
   name: "login",
   //Vue 3.0语法
   // setup(props, context) {
-  setup(props, { refs }) {
+  setup(props, { refs, root }) {
     //3.0 这里放置 data数据 、生命周期函数、自定义函数
     //对象 用reactive声明
     const menuTab = reactive([
@@ -111,6 +128,20 @@ export default {
     //模块值 ref 声明基础数据类型，取值、赋值 XX.value = xxx
     const model = ref("login");
     // console.log(model.value);
+
+    //登录。注册按钮
+    const loginButtonStatus = ref(true);
+    const defaultOptions = { animationData: animationData.default };
+    const animationSpeed = 1;
+    let anim = {};
+
+    //倒计时
+    const timer = ref(null);
+
+    const codeButton = reactive({
+      status: false,
+      text: "获取验证码"
+    });
 
     //表单
     const ruleForm = reactive({
@@ -171,6 +202,9 @@ export default {
         callback();
       }
     };
+    let handleAnimation = ob => {
+      anim = ob;
+    };
 
     //表单验证
     const rules = reactive({
@@ -194,29 +228,140 @@ export default {
     const toggleMenu = data => {
       menuTab.forEach((ele, index) => {
         ele.current = false;
-        console.log(index);
+        //console.log(index);
       });
       data.current = true;
       model.value = data.type;
+      resetForm("ruleForm");
     };
     //提交
     const submitForm = formName => {
+      // toggleMenu(menuTab[0]);
+      // clearCountDown();
+      // return false;
       // context.refs[formName].validate(valid => {
       refs[formName].validate(valid => {
         if (valid) {
-          alert("submit!");
+          let requestData = {
+            username: ruleForm.username,
+            password: ruleForm.password,
+            code: ruleForm.code
+          };
+          if (model.value === "login") {
+            Login(requestData)
+              .then(response => {
+                console.log(response);
+                let data = response.data;
+                root.$message({
+                  message: data.message,
+                  type: "success"
+                });
+                if (data.resCode == 0) {
+                  //跳转首页
+                  root.$router.push("/index");
+                }
+              })
+              .catch(error => {
+                console.log(error);
+              });
+          } else {
+            //注册接口
+            Register(requestData)
+              .then(response => {
+                console.log(response);
+                let data = response.data;
+                root.$message({
+                  message: data.message,
+                  type: "success"
+                });
+              })
+              .catch(error => {
+                console.log(error);
+              });
+          }
         } else {
           testJs("error submit!!");
           return false;
         }
       });
+      // });
     };
+    //重置表单
+    const resetForm = formName => {
+      refs[formName].resetFields();
+    };
+
+    //倒计时
+    const codeDown = value => {
+      //先判断定时器是否存在，不存在则先清除
+      if (timer.value) {
+        clearInterval(timer.value);
+      }
+      //1. setTimeout()执行一次
+      //2. setInterval 不断执行，需要条件才会停止
+      timer.value = setInterval(() => {
+        value--;
+        if (value === 0) {
+          //1.清除定时 setTimeout.clearTimeout(变量)
+          //2.清除定时 setInterval.clearInterval(变量)
+          clearInterval(timer.value);
+          codeButton.text = "再次获取";
+          codeButton.status = false;
+        } else {
+          codeButton.text = `倒计时${value}秒`;
+        }
+      }, 1000);
+    };
+
+    //清除倒计时
+    const clearCountDown = () => {
+      //还原获取验证按钮
+      codeButton.status = false;
+      codeButton.text = "获取验证码";
+      //清除倒计时
+      clearInterval(timer.value);
+    };
+
     //获取验证码
     const getSms = () => {
-      let data = {
-        username: ruleForm.username
+      //判断邮箱
+      if (ruleForm.username == "") {
+        root.$message.error("邮箱不能为空");
+        return false;
+      }
+      if (!validateEmailReg(ruleForm.username)) {
+        root.$message.error("邮箱格式有误，请重新输入");
+        return false;
+      }
+      //请求参数
+      let requestData = {
+        username: ruleForm.username,
+        module: model.value
       };
-      GetSms(data);
+      //获取验证码 按钮禁用
+      codeButton.status = true;
+      codeButton.text = "发送中";
+
+      setTimeout(() => {
+        //获取验证码接口请求
+        GetSms(requestData)
+          .then(response => {
+            //Promise.resolve
+            let data = response.data;
+            console.log(response);
+            root.$message({
+              message: data.message,
+              type: "success"
+            });
+            //调用定时器，倒计时 启用登录或者注册按钮
+            loginButtonStatus.value = false;
+            codeDown(60);
+          })
+          .catch(error => {
+            //Promise.reject
+            console.log(error);
+          });
+      }, 2000);
     };
 
     //新的声明周期函数 挂载完成后
@@ -225,11 +370,21 @@ export default {
     return {
       menuTab,
       model,
+      loginButtonStatus,
+      timer,
+      codeButton,
       ruleForm,
       rules,
       toggleMenu,
+      codeDown,
       submitForm,
-      getSms
+      resetForm,
+      clearCountDown,
+      getSms,
+      defaultOptions,
+      animationSpeed,
+      anim,
+      handleAnimation
     };
   }
 };

@@ -7,7 +7,7 @@ import service from "@/utils/request";
  * 获取验证码接口
  */
 export function GetSms(data) {
-  service.request({
+  return service.request({
     method: "post",
     url: "/getSms/",
     data //ES6 如果两者都是同名的情况下，写成单个
@@ -21,7 +21,21 @@ export function GetSms(data) {
 /**
  * 登录 接口
  */
+export function Login(data) {
+  return service.request({
+    method: "post",
+    url: "/login/",
+    data
+  });
+}
 
 /**
  * 注册接口
  */
+export function Register(data) {
+  return service.request({
+    method: "post",
+    url: "/register/",
+    data
+  });
+}
